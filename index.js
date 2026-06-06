@@ -1,6 +1,6 @@
 const dns = require("node:dns");
 dns.setServers(["8.8.8.8", "8.8.4.4"]);
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 const express = require("express");
 require("dotenv").config();
@@ -28,15 +28,23 @@ async function run() {
 
     app.post("/carlisted", async (req, res) => {
       const carData = req.body;
-      console.log(carData, "body");
-      console.log(typeof carData, "data");
+
       const result = await carCollections.insertOne(carData);
       res.send(result);
     });
     app.get("/carlisted", async (req, res) => {
-      console.log(carData, "body");
-      console.log(typeof carData, "data");
-      const result = await carCollections.find().toArray;
+      const result = await carCollections.find().toArray();
+
+      res.send(result);
+    });
+    app.get("/carlisted/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log(id, "id has dep");
+      const result = await carCollections.findOne({
+        _id: new ObjectId(id),
+      });
+      console.log(result, "result this is");
+
       res.send(result);
     });
     // Send a ping to confirm a successful connection
