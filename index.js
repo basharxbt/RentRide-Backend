@@ -3,9 +3,13 @@ dns.setServers(["8.8.8.8", "8.8.4.4"]);
 const { MongoClient, ServerApiVersion } = require("mongodb");
 
 const express = require("express");
+require("dotenv").config();
 const app = express();
-const uri =
-  "mongodb+srv://rentcar:8SjbHtGCAvYw4lzZ@cluster0.vuimuyf.mongodb.net/?appName=Cluster0";
+const cors = require("cors");
+app.use(express.json());
+app.use(cors());
+const port = 3100;
+const uri = process.env.MONGODB_URI;
 
 const client = new MongoClient(uri, {
   serverApi: {
@@ -15,14 +19,26 @@ const client = new MongoClient(uri, {
   },
 });
 
-const port = 3100;
-
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
     const db = client.db("rentCar");
     const carCollections = db.collection("addedCar");
+
+    app.post("/carlisted", async (req, res) => {
+      const carData = req.body;
+      console.log(carData, "body");
+      console.log(typeof carData, "data");
+      const result = await carCollections.insertOne(carData);
+      res.send(result);
+    });
+    app.get("/carlisted", async (req, res) => {
+      console.log(carData, "body");
+      console.log(typeof carData, "data");
+      const result = await carCollections.find().toArray;
+      res.send(result);
+    });
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
