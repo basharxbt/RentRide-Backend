@@ -25,6 +25,7 @@ async function run() {
     await client.connect();
     const db = client.db("rentCar");
     const carCollections = db.collection("addedCar");
+    const myBookings = db.collection("myBookings");
 
     app.post("/carlisted", async (req, res) => {
       const carData = req.body;
@@ -39,11 +40,17 @@ async function run() {
     });
     app.get("/carlisted/:id", async (req, res) => {
       const id = req.params.id;
-      console.log(id, "id has dep");
+
       const result = await carCollections.findOne({
         _id: new ObjectId(id),
       });
-      console.log(result, "result this is");
+
+      res.send(result);
+    });
+    app.post("/bookings", async (req, res) => {
+      const cursor = req.body;
+      console.log(cursor);
+      const result = await myBookings.insertOne(cursor);
 
       res.send(result);
     });
