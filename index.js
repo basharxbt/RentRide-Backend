@@ -54,6 +54,19 @@ async function run() {
 
       res.send(result);
     });
+    app.get("/bookings", async (req, res) => {
+      const result = await myBookings.find().toArray();
+
+      res.send(result);
+    });
+    app.delete("/carlisted/:id", async (req, res) => {
+      const id = req.params.id;
+      const result = await myBookings.findOne({
+        _id: new ObjectId(id),
+      });
+
+      res.send(result);
+    });
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
