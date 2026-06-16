@@ -29,8 +29,10 @@ async function run() {
 
     app.post("/carlisted", async (req, res) => {
       const carData = req.body;
+      console.log(carData, "cardata info");
 
       const result = await carCollections.insertOne(carData);
+      console.log(result, "car data result info");
       res.send(result);
     });
     app.get("/carlisted", async (req, res) => {
@@ -61,9 +63,23 @@ async function run() {
     });
     app.delete("/carlisted/:id", async (req, res) => {
       const id = req.params.id;
-      const result = await myBookings.findOne({
+
+      const result = await carCollections.deleteOne({
         _id: new ObjectId(id),
       });
+
+      res.send(result);
+    });
+    app.patch("/carlisted/:id", async (req, res) => {
+      const id = req.params.id;
+      const updateCar = req.body;
+      console.log(id, updateCar, "updated cars");
+      const result = await carCollections.updateOne(
+        { _id: new ObjectId(id) },
+        { $set: updateCar },
+      );
+
+      console.log(result);
 
       res.send(result);
     });
