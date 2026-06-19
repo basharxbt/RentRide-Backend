@@ -6,6 +6,7 @@ const express = require("express");
 require("dotenv").config();
 const app = express();
 const cors = require("cors");
+const { createRemoteJWKSet, jwtVerify } = require("jose-cjs");
 app.use(express.json());
 app.use(cors());
 const port = 3100;
@@ -19,6 +20,30 @@ const client = new MongoClient(uri, {
   },
 });
 
+const JWKS = createRemoteJWKSet(new URL("http://localhost:3000/api/auth/jwks"));
+
+const authenticate = async (req, res, next) => {
+  const header = req?.headers.authorization;
+  const auth = header.split(" ")[1];
+
+  console.log(auth, "header and auth info");
+  next();
+
+  if (!header) {
+    res.status(401).send({ message: "unauthorized access" });
+  }
+  if (!auth) {
+    res.status(401).send({ message: "unauthorized access" });
+  }
+
+  try {
+    const { playload } = await jwtVerify(auth, JWKS);
+    next();
+  } catch (error) {
+    res.status(401).send({ message: "unauthorized access" });
+  }
+};
+
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
@@ -30,7 +55,7 @@ async function run() {
     app.post("/carlisted", async (req, res) => {
       const carData = req.body;
       console.log(carData, "cardata info");
-
+      s;
       const result = await carCollections.insertOne(carData);
       console.log(result, "car data result info");
       res.send(result);
@@ -56,12 +81,12 @@ async function run() {
 
       res.send(result);
     });
-    app.get("/bookings", async (req, res) => {
+    app.get("/bookings", authenticate, async (req, res) => {
       const result = await myBookings.find().toArray();
 
       res.send(result);
     });
-    app.delete("/carlisted/:id", async (req, res) => {
+    app.delete("/carlisted/:id", authenticate, async (req, res) => {
       const id = req.params.id;
 
       const result = await carCollections.deleteOne({
@@ -83,6 +108,7 @@ async function run() {
 
       res.send(result);
     });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
